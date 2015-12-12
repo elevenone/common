@@ -16,11 +16,17 @@ class ArrayObject implements ArrayAccess, Serializable, Countable
     /**
      * Construct an instance from an array or no data
      * @param array $input
+     * @param boolean $convert Convert nested arrays
      */
-    public function __construct(array $input = [])
+    public function __construct(array $input = [], $convert = false)
     {
         $this->store = [];
-        $this->setArray($input);
+
+        if ($convert === true) {
+            $this->setNested($input);
+        } else {
+            $this->setArray($input);
+        }
     }
 
     /**
@@ -31,6 +37,21 @@ class ArrayObject implements ArrayAccess, Serializable, Countable
     {
         foreach ($input as $key => $value) {
             $this->offsetSet($key, $value);
+        }
+    }
+
+    /**
+     * Apply an array to this instance, converting nested associative arrays to ArrayObject instances
+     * @param array $input [description]
+     */
+    public function setNested(array $input)
+    {
+        foreach ($input as $key => $value) {
+            $this->store[$key] = (
+                is_array($value) && (bool)count(array_filter(array_keys($value), 'is_string'))
+                ? new self($value, true)
+                : $value
+            );
         }
     }
 
@@ -54,11 +75,8 @@ class ArrayObject implements ArrayAccess, Serializable, Countable
      */
     public function offsetSet($key, $value)
     {
-        return $this->store[$key] = (
-            is_array($value) && (bool)count(array_filter(array_keys($value), 'is_string'))
-            ? new self($value)
-            : $value
-        );
+        return $this->store[$key] = $value;
+        ;
     }
 
     /**

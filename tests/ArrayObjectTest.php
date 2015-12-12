@@ -41,6 +41,16 @@ class ArrayObjectTest extends \PHPUnit_Framework_TestCase
         $this->assertArrayHasKey('badger', $data);
     }
 
+    public function testSetNested()
+    {
+        $this->object->setNested($this->data);
+
+        $data = $this->getInternal('store');
+
+        $this->assertArrayHasKey('badger', $data);
+        $this->assertInstanceOf('EmbarkNow\ArrayObject', $data['sub']);
+    }
+
     public function testSetProperty()
     {
         $this->object->badger = 'mushroom';
